@@ -27,8 +27,8 @@ const FEATURES = [
   },
   {
     icon: FileStack,
-    title: "Gratis",
-    desc: "Tanpa biaya tersembunyi dan tanpa perlu daftar akun untuk mulai memakai.",
+    title: "Tanpa Instalasi",
+    desc: "Tidak perlu unduh atau pasang aplikasi apa pun, langsung pakai di browser.",
   },
   {
     icon: Globe,
