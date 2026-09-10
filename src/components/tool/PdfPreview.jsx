@@ -56,6 +56,13 @@ function ZoomPanCanvas({ pages, contentWidth }) {
   const pointers = useRef(new Map());
   const gestureRef = useRef(null);
   const [isGesturing, setIsGesturing] = useState(false);
+  // Below MIN_SCALE+epsilon we're "not zoomed": let the browser scroll the
+  // list of pages natively (touch-action: pan-y) instead of hijacking every
+  // touch for manual panning. Manual pan/zoom only kicks in once the user
+  // actually pinches or double-taps to zoom in. This is what makes swiping
+  // through a multi-page (multi-slide) result feel like normal scrolling on
+  // mobile instead of getting stuck.
+  const isZoomed = transform.scale > MIN_SCALE + 0.001;
 
   const contentHeight = pages.reduce((sum, p) => sum + p.height, 0) + Math.max(0, pages.length - 1) * PAGE_GAP;
 
@@ -98,8 +105,32 @@ function ZoomPanCanvas({ pages, contentWidth }) {
   // rotation, or the container itself got resized).
   useEffect(() => {
     setT({ scale: 1, tx: 0, ty: 0 });
+    if (wrapRef.current) wrapRef.current.scrollTop = 0;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentWidth, contentHeight, viewSize.w, viewSize.h]);
+
+  // While not zoomed, the browser owns vertical scrolling natively (see the
+  // touch-action / overflow toggle on the wrapper below) and our own `ty`
+  // isn't used for layout. The moment the user starts to zoom in — via
+  // pinch, double-tap, or the toolbar buttons — we need a starting `ty`
+  // baseline that matches whatever they were already scrolled to, so the
+  // zoomed view picks up from the same spot instead of jumping to the top.
+  const ensureZoomBaseline = useCallback(() => {
+    if (!isZoomed && wrapRef.current) {
+      stateRef.current = { scale: 1, tx: 0, ty: -wrapRef.current.scrollTop };
+    }
+  }, [isZoomed]);
+
+  // Mirror image of the above: once the user zooms back out to 1x, hand
+  // control back to native scrolling at the equivalent scroll position.
+  const prevZoomedRef = useRef(isZoomed);
+  useEffect(() => {
+    if (prevZoomedRef.current && !isZoomed && wrapRef.current) {
+      const maxScroll = Math.max(0, contentHeight - viewSize.h);
+      wrapRef.current.scrollTop = clamp(-stateRef.current.ty, 0, maxScroll);
+    }
+    prevZoomedRef.current = isZoomed;
+  }, [isZoomed, contentHeight, viewSize.h]);
 
   const zoomAt = useCallback(
     (factor, cx, cy) => {
@@ -114,10 +145,16 @@ function ZoomPanCanvas({ pages, contentWidth }) {
   );
 
   const onPointerDown = (e) => {
-    e.currentTarget.setPointerCapture?.(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    setIsGesturing(true);
+
     if (pointers.current.size === 1) {
+      // At 1x, a single finger/mouse drag is left to native scrolling
+      // (touch-action: pan-y / overflow-y: auto below) so it feels exactly
+      // like scrolling any other list — we only take over once actually
+      // zoomed in, where native scroll no longer applies.
+      if (!isZoomed) return;
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+      setIsGesturing(true);
       gestureRef.current = {
         mode: "pan",
         startX: e.clientX,
@@ -126,6 +163,11 @@ function ZoomPanCanvas({ pages, contentWidth }) {
         ty0: stateRef.current.ty,
       };
     } else if (pointers.current.size === 2) {
+      // A second finger always means "start pinch-zooming", regardless of
+      // current zoom level.
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+      ensureZoomBaseline();
+      setIsGesturing(true);
       const pts = [...pointers.current.values()];
       const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
       gestureRef.current = {
@@ -168,7 +210,7 @@ function ZoomPanCanvas({ pages, contentWidth }) {
     if (pointers.current.size === 0) {
       gestureRef.current = null;
       setIsGesturing(false);
-    } else if (pointers.current.size === 1) {
+    } else if (pointers.current.size === 1 && isZoomed) {
       const [[, p]] = pointers.current;
       gestureRef.current = { mode: "pan", startX: p.x, startY: p.y, tx0: stateRef.current.tx, ty0: stateRef.current.ty };
     }
@@ -178,24 +220,42 @@ function ZoomPanCanvas({ pages, contentWidth }) {
     const rect = wrapRef.current.getBoundingClientRect();
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
-    if (stateRef.current.scale > MIN_SCALE + 0.05) setT({ scale: 1, tx: 0, ty: 0 });
-    else zoomAt(2.5, cx, cy);
+    if (isZoomed) {
+      setT({ scale: 1, tx: 0, ty: 0 });
+    } else {
+      ensureZoomBaseline();
+      zoomAt(2.5, cx, cy);
+    }
   };
 
   const onWheel = (e) => {
-    e.preventDefault();
     if (e.ctrlKey || e.metaKey) {
+      // Pinch-to-zoom on a trackpad, or ctrl/cmd+wheel: always zoom.
+      e.preventDefault();
+      ensureZoomBaseline();
       const rect = wrapRef.current.getBoundingClientRect();
       zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX - rect.left, e.clientY - rect.top);
-    } else {
+    } else if (isZoomed) {
+      // Plain scrolling while zoomed pans the (now non-native-scrollable) view.
+      e.preventDefault();
       setT({ scale: stateRef.current.scale, tx: stateRef.current.tx - e.deltaX, ty: stateRef.current.ty - e.deltaY });
     }
+    // At 1x with no modifier key, let the wheel/trackpad scroll the
+    // container natively — don't preventDefault or intercept it.
+  };
+
+  const zoomInButton = () => {
+    ensureZoomBaseline();
+    zoomAt(1.4, viewSize.w / 2, viewSize.h / 2);
   };
 
   return (
     <div
       ref={wrapRef}
-      className="relative h-full w-full touch-none select-none overflow-hidden"
+      className={`relative h-full w-full select-none ${
+        isZoomed ? "touch-none overflow-hidden" : "touch-pan-y overflow-y-auto overflow-x-hidden"
+      }`}
+      style={isZoomed ? undefined : { WebkitOverflowScrolling: "touch" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endPointer}
@@ -209,7 +269,9 @@ function ZoomPanCanvas({ pages, contentWidth }) {
         style={{
           width: contentWidth,
           gap: PAGE_GAP,
-          transform: `translate3d(${transform.tx}px, ${transform.ty}px, 0) scale(${transform.scale})`,
+          transform: isZoomed
+            ? `translate3d(${transform.tx}px, ${transform.ty}px, 0) scale(${transform.scale})`
+            : "none",
           transition: isGesturing ? "none" : "transform 150ms ease-out",
         }}
       >
@@ -238,7 +300,7 @@ function ZoomPanCanvas({ pages, contentWidth }) {
         <button
           type="button"
           className="flex size-7 items-center justify-center rounded-md text-white hover:bg-white/15"
-          onClick={() => zoomAt(1.4, viewSize.w / 2, viewSize.h / 2)}
+          onClick={zoomInButton}
           aria-label="Perbesar"
         >
           <ZoomIn className="size-4" />
