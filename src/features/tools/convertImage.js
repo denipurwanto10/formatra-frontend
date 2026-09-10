@@ -73,10 +73,14 @@ export async function convertImage(file, targetFormat, onProgress) {
   return blob;
 }
 
-async function loadImageSource(file) {
+export async function loadImageSource(file) {
   if (typeof createImageBitmap === "function") {
     try {
-      return await createImageBitmap(file);
+      // Without imageOrientation: "from-image", createImageBitmap ignores
+      // the EXIF Orientation tag and hands back the raw sensor-oriented
+      // pixels, which is what made phone photos come out rotated after
+      // conversion — this bakes the correct rotation in at decode time.
+      return await createImageBitmap(file, { imageOrientation: "from-image" });
     } catch {
       // Some browsers can't decode certain WEBP/GIF variants via
       // createImageBitmap — fall back to a plain <img> element below.

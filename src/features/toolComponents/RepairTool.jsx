@@ -10,7 +10,7 @@ import { TOOLS } from "../../lib/toolsMeta";
 import { useToolProcess } from "../../hooks/useToolProcess";
 import { useToast } from "../../context/ToastContext";
 import { repairPdf } from "../tools/repairPdf";
-import { withSuffix } from "../../utils/download";
+import { withSuffix, downloadBlob } from "../../utils/download";
 import { formatBytes } from "../../utils/formatBytes";
 
 export default function RepairTool() {
@@ -79,14 +79,7 @@ function RepairResult({ file, outcome, onReset }) {
   const name = withSuffix(file.name, "diperbaiki");
 
   const download = () => {
-    const url = URL.createObjectURL(outcome.blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    downloadBlob(outcome.blob, name);
   };
 
   return (

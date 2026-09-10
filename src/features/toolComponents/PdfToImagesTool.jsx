@@ -11,6 +11,7 @@ import { TOOLS } from "../../lib/toolsMeta";
 import { useToolProcess } from "../../hooks/useToolProcess";
 import { useToast } from "../../context/ToastContext";
 import { pdfToImages } from "../tools/pdfToImages";
+import { downloadBlob } from "../../utils/download";
 
 export default function PdfToImagesTool() {
   const tool = TOOLS["pdf-to-image"];
@@ -54,14 +55,7 @@ export default function PdfToImagesTool() {
               </p>
               <Button
                 icon={ImageIcon}
-                onClick={() => {
-                  const url = URL.createObjectURL(result.zip);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "halaman-pdf.zip";
-                  a.click();
-                  setTimeout(() => URL.revokeObjectURL(url), 2000);
-                }}
+                onClick={() => downloadBlob(result.zip, "halaman-pdf.zip")}
               >
                 Unduh semua (.zip)
               </Button>

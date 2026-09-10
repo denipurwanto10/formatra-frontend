@@ -9,6 +9,7 @@ import { loadPdfDocument } from "../../lib/pdfjs";
 import { useEditorStore } from "./useEditorStore";
 import { CanvasProvider } from "./CanvasContext";
 import { uid } from "../../utils/id";
+import { downloadBlob } from "../../utils/download";
 import ThumbnailSidebar from "./components/ThumbnailSidebar";
 import EditorToolbar from "./components/EditorToolbar";
 import PropertiesPanel from "./components/PropertiesPanel";
@@ -156,12 +157,7 @@ function EditorWorkspace({ file, pdfDoc, scannedPageCount, onFileReplaced }) {
         canvasJSON: useEditorStore.getState().canvasJSON,
         onProgress: () => {},
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name.replace(/\.pdf$/i, "") + "-diedit.pdf";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      downloadBlob(blob, file.name.replace(/\.pdf$/i, "") + "-diedit.pdf");
       addHistoryEntry({ toolId: "pdf-editor", toolName: TOOLS["pdf-editor"].name, fileName: file.name });
       toast.success("PDF berhasil diekspor", "Perubahan Anda telah disimpan ke file baru.");
     } catch (e) {

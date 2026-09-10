@@ -12,6 +12,7 @@ import { useToolProcess } from "../../hooks/useToolProcess";
 import { useToast } from "../../context/ToastContext";
 import { splitPdfByRanges, splitPdfAllPages, zipResults } from "../tools/splitPdf";
 import { loadPdfDocument } from "../../lib/pdfjs";
+import { downloadBlob } from "../../utils/download";
 
 export default function SplitTool() {
   const tool = TOOLS["split-pdf"];
@@ -179,13 +180,3 @@ function ModeButton({ active, children, onClick }) {
   );
 }
 
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-}

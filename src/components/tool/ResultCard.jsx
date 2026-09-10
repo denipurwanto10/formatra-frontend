@@ -4,20 +4,14 @@ import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import PdfPreview from "./PdfPreview";
 import { formatBytes } from "../../utils/formatBytes";
+import { downloadBlob } from "../../utils/download";
 
 function isPreviewable(blob) {
   return blob.type === "application/pdf" || blob.type.startsWith("image/") || blob.type.startsWith("video/");
 }
 
 function downloadOne(f) {
-  const url = URL.createObjectURL(f.blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = f.name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  downloadBlob(f.blob, f.name);
 }
 
 /**
