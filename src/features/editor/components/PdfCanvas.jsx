@@ -9,11 +9,25 @@ import {
   Line,
   PencilBrush,
   FabricImage,
+  FabricObject,
 } from "fabric";
 import { useEditorStore } from "../useEditorStore";
 import { useCanvasHandle } from "../CanvasContext";
 import { renderPageToCanvas } from "../../../lib/pdfjs";
 import { pageTextCache, ensurePageTextCached } from "../pageTextCache";
+
+// Bigger touch hit-area on every object's resize/rotate handles. The
+// *visual* handle (cornerSize) stays the same so the editor doesn't look
+// different on desktop, but a finger gets a much more forgiving ~30px
+// target to grab instead of fabric's 24px touch default — the difference
+// between reliably resizing a small textbox on a phone and repeatedly
+// missing the handle.
+FabricObject.ownDefaults.touchCornerSize = 30;
+FabricObject.ownDefaults.cornerStyle = "circle";
+FabricObject.ownDefaults.transparentCorners = false;
+FabricObject.ownDefaults.cornerColor = "#2f6fed";
+FabricObject.ownDefaults.cornerStrokeColor = "#ffffff";
+FabricObject.ownDefaults.borderColor = "#2f6fed";
 
 /**
  * Map a PDF's *actual* embedded font name (e.g. "ArialMT", "Calibri-Bold",
