@@ -94,71 +94,6 @@ function EditorWorkspace({ file, pdfDoc, scannedPageCount, onFileReplaced }) {
     return () => ro.disconnect();
   }, [activePage?.id, activePage?.widthPt, setAutoZoom]);
 
-  // Two-finger pinch-to-zoom on touch devices. The scroll container's own
-  // CSS `touch-action: pan-x pan-y` (set below) stops the browser's native
-  // page-zoom gesture from fighting this, while still allowing normal
-  // one-finger scrolling/panning to pass through untouched. We track the
-  // pinch midpoint in *content* coordinates (relative to the scrollable
-  // content, not the viewport) so the point under the user's fingers stays
-  // put as the page scales up/down, instead of the canvas jumping around.
-  useEffect(() => {
-    const el = canvasAreaRef.current;
-    if (!el) return;
-    let pinch = null;
-
-    const dist = (t0, t1) => Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
-    const mid = (t0, t1) => ({ x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 });
-
-    const onTouchStart = (e) => {
-      if (e.touches.length !== 2) {
-        pinch = null;
-        return;
-      }
-      const [t0, t1] = e.touches;
-      const rect = el.getBoundingClientRect();
-      const m = mid(t0, t1);
-      pinch = {
-        startDist: dist(t0, t1) || 1,
-        startZoom: useEditorStore.getState().zoom,
-        anchorX: m.x - rect.left + el.scrollLeft,
-        anchorY: m.y - rect.top + el.scrollTop,
-      };
-    };
-
-    const onTouchMove = (e) => {
-      if (!pinch || e.touches.length !== 2) return;
-      e.preventDefault();
-      const [t0, t1] = e.touches;
-      const scale = dist(t0, t1) / pinch.startDist;
-      const newZoom = Math.min(3, Math.max(0.25, pinch.startZoom * scale));
-      useEditorStore.getState().setZoom(newZoom);
-      const ratio = newZoom / pinch.startZoom;
-      const rect = el.getBoundingClientRect();
-      const m = mid(t0, t1);
-      // Wait a frame so the canvas has re-rendered at the new size before
-      // we resize the scroll offset against it.
-      requestAnimationFrame(() => {
-        el.scrollLeft = pinch.anchorX * ratio - (m.x - rect.left);
-        el.scrollTop = pinch.anchorY * ratio - (m.y - rect.top);
-      });
-    };
-
-    const onTouchEnd = (e) => {
-      if (e.touches.length < 2) pinch = null;
-    };
-
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchmove", onTouchMove, { passive: false });
-    el.addEventListener("touchend", onTouchEnd);
-    el.addEventListener("touchcancel", onTouchEnd);
-    return () => {
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchmove", onTouchMove);
-      el.removeEventListener("touchend", onTouchEnd);
-      el.removeEventListener("touchcancel", onTouchEnd);
-    };
-  }, []);
-
   // Ctrl+F / Ctrl+H open the Find & Replace bar instead of the browser's own
   // find-in-page (which can't see canvas-rendered PDF content anyway).
   useEffect(() => {
@@ -275,11 +210,7 @@ function EditorWorkspace({ file, pdfDoc, scannedPageCount, onFileReplaced }) {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <ThumbnailSidebar pdfDoc={pdfDoc} />
-        <div
-          ref={canvasAreaRef}
-          className="relative flex-1 overflow-auto p-4 pb-16 lg:p-10 lg:pb-10"
-          style={{ touchAction: "pan-x pan-y" }}
-        >
+        <div ref={canvasAreaRef} className="relative flex-1 overflow-auto p-4 pb-16 lg:p-10 lg:pb-10">
           <div className="flex min-h-full items-start justify-center">
             <PdfCanvas pdfDoc={pdfDoc} />
           </div>

@@ -26,9 +26,9 @@ const FEATURES = [
     desc: "Tanpa antre upload/download — hasil langsung tersedia begitu proses selesai di browser.",
   },
   {
-    icon: ShieldCheck,
-    title: "Privat",
-    desc: "File tetap berada di perangkatmu dan diproses langsung di browser.",
+    icon: FileStack,
+    title: "Gratis",
+    desc: "Tanpa biaya tersembunyi dan tanpa perlu daftar akun untuk mulai memakai.",
   },
   {
     icon: Globe,
