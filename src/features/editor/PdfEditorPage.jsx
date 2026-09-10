@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download } from "lucide-react";
 import ToolPageHeader from "../../components/tool/ToolPageHeader";
 import Dropzone from "../../components/ui/Dropzone";
@@ -50,13 +50,48 @@ function ScannedPdfBanner({ scannedPageCount, totalPages, onRunOcr, ocrState }) 
 
 function EditorWorkspace({ file, pdfDoc, scannedPageCount, onFileReplaced }) {
   const pages = useEditorStore((s) => s.pages);
+  const activePageId = useEditorStore((s) => s.activePageId);
+  const setAutoZoom = useEditorStore((s) => s.setAutoZoom);
   const reset = useEditorStore((s) => s.reset);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [ocrState, setOcrState] = useState({ running: false, progress: 0 });
   const [findState, setFindState] = useState({ open: false, mode: "find" });
+  const canvasAreaRef = useRef(null);
   const handle = useCanvasHandle();
   const toast = useToast();
+
+  const activePage = pages.find((p) => p.id === activePageId);
+
+  // Keep the page fitted to the visible width by default — without this a
+  // page opens at a fixed 100% zoom, which is wider than most phone screens
+  // and makes the editor look broken (huge blank page, everything shifted
+  // off-screen) until the user manually zooms out. Re-fits on page switch,
+  // device rotation, or the properties panel opening/closing (both resize
+  // the visible canvas area), but backs off the moment the user picks their
+  // own zoom level.
+  useEffect(() => {
+    const el = canvasAreaRef.current;
+    if (!el || !activePage) return;
+    const fit = () => {
+      if (!useEditorStore.getState().zoomIsAuto) return;
+      // Match the area's actual horizontal padding (p-4 → 32px, lg:p-10 →
+      // 80px) instead of hardcoding one, so the fit is exact at every
+      // breakpoint rather than leaving an arbitrary gap or clipping a hair.
+      const styles = window.getComputedStyle(el);
+      const paddingX = parseFloat(styles.paddingLeft || 0) + parseFloat(styles.paddingRight || 0);
+      const available = el.clientWidth - paddingX;
+      if (available <= 0) return;
+      const fitZoom = available / activePage.widthPt;
+      // Never zoom a page *in* past 100% automatically — only ever fit it
+      // down to fewer available pixels than its natural size.
+      setAutoZoom(Math.max(0.25, Math.min(1, fitZoom)));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [activePage?.id, activePage?.widthPt, setAutoZoom]);
 
   // Ctrl+F / Ctrl+H open the Find & Replace bar instead of the browser's own
   // find-in-page (which can't see canvas-rendered PDF content anyway).
@@ -179,7 +214,7 @@ function EditorWorkspace({ file, pdfDoc, scannedPageCount, onFileReplaced }) {
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <ThumbnailSidebar pdfDoc={pdfDoc} />
-        <div className="relative flex-1 overflow-auto p-4 pb-16 lg:p-10 lg:pb-10">
+        <div ref={canvasAreaRef} className="relative flex-1 overflow-auto p-4 pb-16 lg:p-10 lg:pb-10">
           <div className="flex min-h-full items-start justify-center">
             <PdfCanvas pdfDoc={pdfDoc} />
           </div>

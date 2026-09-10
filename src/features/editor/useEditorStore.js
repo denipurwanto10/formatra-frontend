@@ -12,6 +12,12 @@ export const useEditorStore = create((set, get) => ({
   canvasJSON: {}, // pageId -> fabric JSON string
   historyByPage: {}, // pageId -> { past: [], future: [] }
   zoom: 1,
+  // True until the user manually changes zoom (toolbar +/-/reset or a
+  // keyboard shortcut). While true, the workspace is free to keep the page
+  // fitted to the visible width — this is what makes a page open at a sane
+  // size on a narrow phone screen instead of at a fixed 100% that overflows
+  // sideways off the edge of the screen.
+  zoomIsAuto: true,
   tool: "select",
   toolOptions: {
     color: "#2f6fed",
@@ -45,6 +51,7 @@ export const useEditorStore = create((set, get) => ({
       canvasJSON,
       historyByPage,
       zoom: 1,
+      zoomIsAuto: true,
       tool: "select",
     });
   },
@@ -59,6 +66,7 @@ export const useEditorStore = create((set, get) => ({
       canvasJSON: {},
       historyByPage: {},
       zoom: 1,
+      zoomIsAuto: true,
       tool: "select",
     });
   },
@@ -74,7 +82,11 @@ export const useEditorStore = create((set, get) => ({
   setTool: (tool) => set({ tool }),
   setToolOptions: (partial) =>
     set((s) => ({ toolOptions: { ...s.toolOptions, ...partial } })),
-  setZoom: (zoom) => set({ zoom: Math.min(3, Math.max(0.25, zoom)) }),
+  setZoom: (zoom) => set({ zoom: Math.min(3, Math.max(0.25, zoom)), zoomIsAuto: false }),
+  // Used only by the fit-to-width effect — updates the zoom level without
+  // marking it as a deliberate user choice, so auto-fit keeps working on
+  // rotation/resize until the user actually touches the zoom controls.
+  setAutoZoom: (zoom) => set({ zoom: Math.min(3, Math.max(0.25, zoom)) }),
   bumpSelection: () => set((s) => ({ selectionTick: s.selectionTick + 1 })),
 
   /** Commit a new canvas state snapshot for a page, pushing the previous one to history. */
