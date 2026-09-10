@@ -71,7 +71,6 @@ export async function pdfToMarkdown(file, onProgress) {
   let totalChars = 0;
 
   pages.forEach((pageData, pageIndex) => {
-    let inList = false;
     pageData.lines.forEach((line) => {
       const text = line.text.replace(/\s+/g, " ").trim();
       if (!text) return;
@@ -83,15 +82,12 @@ export async function pdfToMarkdown(file, onProgress) {
 
       if (BULLET_RE.test(text)) {
         blocks.push(`- ${text.replace(BULLET_RE, "")}`);
-        inList = true;
         return;
       }
       if (NUMBERED_RE.test(text)) {
         blocks.push(text);
-        inList = true;
         return;
       }
-      inList = false;
 
       if (bodySize && size >= bodySize + 7) {
         blocks.push(`# ${text}`);

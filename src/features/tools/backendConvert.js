@@ -51,7 +51,7 @@ export function isBackendConfigured() {
  * simulated "converting…" creep (the server does one shot of work and can't
  * report real progress over a plain HTTP response), 100% on completion.
  */
-export function convertViaBackend({ file, route, mimeType, onProgress, timeoutMs = 100_000 }) {
+export function convertViaBackend({ file, route, onProgress, timeoutMs = 100_000 }) {
   const base = getBackendBaseUrl();
   if (!base) {
     return Promise.reject(new BackendUnavailableError("No conversion server configured"));

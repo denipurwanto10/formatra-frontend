@@ -41,7 +41,7 @@ export default function MetadataTool() {
     return () => {
       cancelled = true;
     };
-  }, [file]);
+  }, [file, toast]);
 
   const handleReset = () => {
     reset();

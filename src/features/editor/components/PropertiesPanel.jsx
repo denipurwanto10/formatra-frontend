@@ -9,7 +9,6 @@ import {
   Italic,
   Underline,
   Strikethrough,
-  Highlighter,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -102,11 +101,9 @@ export default function PropertiesPanel() {
         </div>
       </div>
 
-      {/* Mobile: collapsible bottom sheet so it never crowds the canvas horizontally.
-          pb-[env(safe-area-inset-bottom)] keeps it clear of the home-indicator
-          area on notched phones instead of sitting flush under it. */}
+      {/* Mobile: collapsible bottom sheet so it never crowds the canvas horizontally */}
       <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden">
-        <div className="rounded-t-xl border-t border-hair bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.12)]">
+        <div className="rounded-t-xl border-t border-hair bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.12)]">
           <button
             onClick={() => setMobileExpanded((v) => !v)}
             aria-expanded={mobileExpanded}

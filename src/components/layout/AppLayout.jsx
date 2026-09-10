@@ -108,12 +108,7 @@ export default function AppLayout() {
   };
 
   return (
-    // h-dvh instead of h-screen: on mobile browsers 100vh is measured
-    // against the *largest* possible viewport (address bar hidden), so a
-    // page that fills 100vh sits partly behind the address bar and the
-    // fixed mobile toolbar below it overflows/clips as the bar shows and
-    // hides. dvh tracks the actual visible viewport instead.
-    <div className="flex h-dvh w-full bg-base text-ink">
+    <div className="flex h-screen w-full bg-base text-ink">
       <a href="#main-content" className="skip-link">Lewati ke konten utama</a>
       {/* Desktop sidebar — collapsible, state persisted across visits */}
       <div className="hidden lg:block">
@@ -125,13 +120,7 @@ export default function AppLayout() {
         <Sidebar onNavigate={() => setDrawerOpen(false)} />
       </MobileDrawer>
 
-      {/* min-h-0 is required here: without it this flex column sizes itself
-          to its content (Topbar + whatever <main> contains) instead of to
-          the h-dvh parent, so <main>'s own min-h-0/overflow-y-auto never
-          gets a bounded height to scroll within — every "fit to screen" or
-          "h-full" calculation downstream (e.g. the PDF editor's canvas
-          area) inherits that unbounded height and breaks. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           title={pageTitle(location.pathname)}
           menuOpen={drawerOpen}

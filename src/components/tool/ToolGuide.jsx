@@ -1,4 +1,4 @@
-import { CheckCircle2, Info } from "lucide-react";
+import { Info } from "lucide-react";
 
 const GUIDES = {
   "merge-pdf": ["Pilih minimal 2 PDF.", "Seret file untuk menentukan urutan halaman.", "Klik Gabung lalu unduh hasilnya."],

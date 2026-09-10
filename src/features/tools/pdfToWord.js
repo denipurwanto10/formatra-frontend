@@ -22,7 +22,7 @@ const DEFAULT_MARGIN_PT = 72; // matches docx's default 1" section margin
 // frequently render list bullets using a Wingdings/Symbol private-use glyph
 // (U+F0A7, U+F0B7, U+F0D8, ...) rather than a real "•" character. Without
 // matching those, bulleted lists silently degrade into plain merged text.
-const BULLET_RE = /^\s*([•\-\*▪◦‣∙○●■□\uF06E\uF0A7\uF0B7\uF0D8\uF0A8])\s+/;
+const BULLET_RE = /^\s*([•\-*▪◦‣∙○●■□\uF06E\uF0A7\uF0B7\uF0D8\uF0A8])\s+/;
 // A gap this wide inside one visual line is treated as a tab jump (e.g. a
 // job title on the left and a date range on the right of the same line)
 // rather than ordinary word spacing.
@@ -324,7 +324,7 @@ async function extractPageImages(page) {
     seen.add(objId);
 
     try {
-      const img = await new Promise((resolve, reject) => {
+      const img = await new Promise((resolve) => {
         if (page.objs.has(objId)) resolve(page.objs.get(objId));
         else page.objs.get(objId, resolve);
       });

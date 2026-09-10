@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, FileStack, ShieldCheck, UserX, ServerOff, Database } from "lucide-react";
+import { ArrowLeft, FileStack, ShieldCheck, ServerOff, Database } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 
 const POINTS = [

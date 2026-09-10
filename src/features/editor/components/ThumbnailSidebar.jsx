@@ -36,13 +36,9 @@ export default function ThumbnailSidebar({ pdfDoc }) {
   };
 
   return (
-    // h-28 (112px) was too short for its own content on mobile: a w-16
-    // thumbnail at a typical portrait aspect ratio + its label/controls row
-    // comes out to ~125-130px, so overflow-y-hidden below was silently
-    // cropping every card down to a sliver. h-36 gives it real headroom.
-    <div className="flex h-36 w-full shrink-0 flex-col border-b border-hair bg-surface lg:h-full lg:w-48 lg:border-b-0 lg:border-r">
+    <div className="flex h-28 w-full shrink-0 flex-col border-b border-hair bg-surface lg:h-full lg:w-48 lg:border-b-0 lg:border-r">
       <div className="flex-1 overflow-x-auto overflow-y-hidden p-3 lg:overflow-x-visible lg:overflow-y-auto">
-        <div className="flex h-full gap-3 lg:h-auto lg:flex-col">
+        <div className="flex gap-3 lg:flex-col">
           {pages.map((page, idx) => (
             <div
               key={page.id}
@@ -89,17 +85,7 @@ export default function ThumbnailSidebar({ pdfDoc }) {
                   {idx + 1}
                 </span>
                 <GripVertical className="hidden size-3 opacity-30 lg:block" aria-hidden="true" />
-                {/* On mobile there's no hover state, so these were always
-                    visible — cramming 3-4 extra icons into an already-short
-                    card and pushing its total height past the strip. Only
-                    show them for the active page on mobile; desktop keeps
-                    its existing hover-to-reveal behavior. */}
-                <div
-                  className={clsx(
-                    "flex items-center gap-0.5 lg:opacity-0 lg:transition-opacity lg:group-hover:opacity-100 lg:group-focus-within:opacity-100",
-                    page.id === activePageId ? "opacity-100" : "opacity-0 lg:opacity-0"
-                  )}
-                >
+                <div className="flex items-center gap-0.5 opacity-100 lg:opacity-0 lg:transition-opacity lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
                   {idx > 0 && <IconBtn icon={ChevronUp} label="Pindah ke atas" onClick={(e) => { e.stopPropagation(); move(idx, idx - 1); }} />}
                   {idx < pages.length - 1 && <IconBtn icon={ChevronDown} label="Pindah ke bawah" onClick={(e) => { e.stopPropagation(); move(idx, idx + 1); }} />}
                   <IconBtn
