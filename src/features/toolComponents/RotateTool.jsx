@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RotateCw, RotateCcw as RotateCcwIcon } from "lucide-react";
+import { RotateCw, RotateCcw as RotateCcwIcon, Check, Undo2 } from "lucide-react";
 import ToolPageHeader from "../../components/tool/ToolPageHeader";
 import ResultCard from "../../components/tool/ResultCard";
 import Dropzone from "../../components/ui/Dropzone";
@@ -18,10 +18,12 @@ export default function RotateTool() {
   const [file, setFile] = useState(null);
   const [mode, setMode] = useState("all"); // "all" | "select"
   const [selected, setSelected] = useState(new Set());
-  const [angles, setAngles] = useState({}); // per-page cumulative rotation for preview
+  const [angles, setAngles] = useState({}); // per-page pending rotation — preview only, nothing written to the file yet
   const { thumbs, pageCount } = usePdfThumbnails(file, 0.3);
   const { status, progress, result, error, run, reset, cancel } = useToolProcess(tool);
   const toast = useToast();
+
+  const hasPendingRotation = Object.values(angles).some((a) => a % 360 !== 0);
 
   const handleReset = () => {
     reset();
@@ -38,18 +40,35 @@ export default function RotateTool() {
     });
   };
 
-  const rotatePreview = (idx, delta) => {
-    setAngles((prev) => ({ ...prev, [idx]: ((prev[idx] || 0) + delta + 360) % 360 }));
-  };
-
-  const handleRotate = async (angle) => {
-    const targets = mode === "all" ? "all" : Array.from(selected);
+  // Rotating only updates the on-screen preview (thumbnails spin via CSS) —
+  // the PDF itself isn't touched, so the user can keep nudging pages 90° at
+  // a time, switch selection, or reset, and only pay the processing cost
+  // once they're happy and press "Terapkan & Unduh".
+  const previewRotate = (delta) => {
+    const targets =
+      mode === "all" ? Array.from({ length: pageCount || thumbs.length }, (_, i) => i) : Array.from(selected);
     if (mode === "select" && targets.length === 0) {
       toast.warning("Pilih minimal satu halaman");
       return;
     }
+    setAngles((prev) => {
+      const next = { ...prev };
+      targets.forEach((idx) => {
+        next[idx] = ((next[idx] || 0) + delta + 360) % 360;
+      });
+      return next;
+    });
+  };
+
+  const clearPreview = () => setAngles({});
+
+  const handleApply = async () => {
+    if (!hasPendingRotation) {
+      toast.warning("Putar dulu halaman yang diinginkan, lalu terapkan");
+      return;
+    }
     try {
-      const blob = await run((onProgress) => rotatePdf(file, angle, targets, onProgress), file.name);
+      const blob = await run((onProgress) => rotatePdf(file, angles, onProgress), file.name);
       toast.success("PDF berhasil diputar");
       return blob;
     } catch {
@@ -110,13 +129,28 @@ export default function RotateTool() {
               {status === "processing" ? (
                 <ProcessingCard file={file} progress={progress} label="Memutar halaman..." onCancel={cancel} />
               ) : (
-                <div className="flex gap-2">
-                  <Button variant="secondary" icon={RotateCcwIcon} onClick={() => handleRotate(-90)}>
-                    Putar kiri 90°
-                  </Button>
-                  <Button icon={RotateCw} onClick={() => handleRotate(90)}>
-                    Putar kanan 90°
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button variant="secondary" icon={RotateCcwIcon} onClick={() => previewRotate(-90)}>
+                      Putar kiri 90°
+                    </Button>
+                    <Button variant="secondary" icon={RotateCw} onClick={() => previewRotate(90)}>
+                      Putar kanan 90°
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      icon={Undo2}
+                      onClick={clearPreview}
+                      disabled={!hasPendingRotation}
+                    >
+                      Atur ulang
+                    </Button>
+                    <Button icon={Check} onClick={handleApply} disabled={!hasPendingRotation}>
+                      Terapkan &amp; Unduh
+                    </Button>
+                  </div>
                 </div>
               )}
             </>

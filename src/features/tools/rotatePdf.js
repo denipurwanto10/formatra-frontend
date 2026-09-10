@@ -2,21 +2,23 @@ import { PDFDocument, degrees } from "@cantoo/pdf-lib";
 
 /**
  * @param {File} file
- * @param {number} angle 90 | 180 | 270 applied as a relative rotation
- * @param {number[] | "all"} pageIndices 0-indexed pages to rotate, or "all"
+ * @param {Record<number, number>} pageAngles map of 0-indexed page index ->
+ *   additional rotation in degrees (e.g. 90, 180, 270) to apply on top of
+ *   that page's current rotation. Pages not present in the map, or present
+ *   with a multiple of 360, are left untouched.
  */
-export async function rotatePdf(file, angle, pageIndices = "all", onProgress) {
+export async function rotatePdf(file, pageAngles, onProgress) {
   const bytes = await file.arrayBuffer();
   const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
   const pages = doc.getPages();
-  const targets = pageIndices === "all" ? pages.map((_, i) => i) : pageIndices;
+  const entries = Object.entries(pageAngles || {}).filter(([, delta]) => delta % 360 !== 0);
 
-  targets.forEach((idx, i) => {
-    const page = pages[idx];
+  entries.forEach(([idxStr, delta], i) => {
+    const page = pages[Number(idxStr)];
     if (!page) return;
     const current = page.getRotation().angle;
-    page.setRotation(degrees((current + angle + 360) % 360));
-    onProgress?.(Math.round(((i + 1) / targets.length) * 90));
+    page.setRotation(degrees((current + delta + 360) % 360));
+    onProgress?.(Math.round(((i + 1) / entries.length) * 90));
   });
 
   const outBytes = await doc.save();
