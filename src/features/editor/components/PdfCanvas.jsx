@@ -994,7 +994,7 @@ export default function PdfCanvas({ pdfDoc }) {
     <div
       ref={wrapperRef}
       className="relative bg-white shadow-md"
-      style={{ width: widthPx, height: heightPx }}
+      style={{ width: widthPx, height: heightPx, touchAction: "none" }}
     >
       <canvas
         ref={bgCanvasRef}
@@ -1002,7 +1002,7 @@ export default function PdfCanvas({ pdfDoc }) {
         width={widthPx}
         height={heightPx}
       />
-      <canvas ref={fabricElRef} className="absolute left-0 top-0" />
+      <canvas ref={fabricElRef} className="absolute left-0 top-0" style={{ touchAction: "none" }} />
     </div>
   );
 }
