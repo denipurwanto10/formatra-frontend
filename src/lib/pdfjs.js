@@ -1,5 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist";
-import PdfWorker from "pdfjs-dist/build/pdf.worker.mjs?worker";
+import PdfWorker from "./pdfWorkerEntry.js?worker";
 
 pdfjsLib.GlobalWorkerOptions.workerPort = new PdfWorker();
 
