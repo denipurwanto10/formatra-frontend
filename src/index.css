@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Fredoka", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+:root {
+  /* Neutral, SaaS-style base — purple is reserved for accent/interactive
+     elements only, not for washing the whole surface. */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --border: #e5e7eb;
+  --ink: #111827;
+  --muted: #6b7280;
+  --accent: #6d4aff;
+  --accent-strong: #5a3de6;
+  --accent-ink: #ffffff;
+  --coral: #ff6b4a;
+  --coral-bg: #fff1ec;
+  --sun: #f5a524;
+  --sun-bg: #fff7e6;
+  --success: #15803d;
+  --success-bg: #ecfdf5;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --warning: #b45309;
+  --warning-bg: #fffbeb;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --content: 1180px;
+  color-scheme: light;
+}
+
+.dark {
+  /* Neutral slate dark surfaces — same principle as light mode, accent
+     purple stays reserved for CTAs/active states rather than tinting
+     every panel. */
+  --bg: #0f1115;
+  --surface: #17191f;
+  --surface-2: #1f2229;
+  --border: #2a2e37;
+  --ink: #f3f4f6;
+  --muted: #9ca3af;
+  --accent: #9b7bff;
+  --accent-strong: #b9a3ff;
+  --accent-ink: #14151a;
+  --coral: #ff8a6c;
+  --coral-bg: #2a1810;
+  --sun: #ffca5c;
+  --sun-bg: #332708;
+  --success: #34d399;
+  --success-bg: #0f2a20;
+  --danger: #f87171;
+  --danger-bg: #2a1414;
+  --warning: #fbbf24;
+  --warning-bg: #332708;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --content: 1180px;
+  color-scheme: dark;
+}
+
+@layer base {
+  * { border-color: var(--border); }
+  html, body, #root { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  /* Tailwind's preflight resets buttons to cursor: default — restore the
+     pointer cursor so every clickable control still reads as clickable. */
+  button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { cursor: pointer; }
+}
+
+/* PDF Editor: scoped "iLovePDF-style" theme. Same variable names as the
+   rest of the app (--accent, --accent-strong, --accent-ink) but overridden
+   to a warm red only inside this subtree, so every existing bg-accent /
+   text-accent-ink / border-accent utility (Buttons, active tool states,
+   selected-page border, focus rings, ...) automatically follows suit here
+   without touching the purple branding used everywhere else in the app. */
+.pdf-editor-shell {
+  --accent: #e11d2e;
+  --accent-strong: #c81322;
+  --accent-ink: #ffffff;
+}
+.dark .pdf-editor-shell {
+  --accent: #ff5b64;
+  --accent-strong: #ff7c83;
+  --accent-ink: #1a0506;
+}
+
+@layer utilities {
+  .bg-surface { background: var(--surface); }
+  .bg-surface-2 { background: var(--surface-2); }
+  .bg-base { background: var(--bg); }
+  .text-ink { color: var(--ink); }
+  .text-muted { color: var(--muted); }
+  .text-accent { color: var(--accent); }
+  .border-hair { border: 1px solid var(--border); }
+  .bg-accent { background: var(--accent); }
+  .text-accent-ink { color: var(--accent-ink); }
+  /* Ghost-button hover: a translucent tint of --ink instead of a flat
+     surface color. Flat bg-surface/bg-surface-2 hovers can end up nearly
+     invisible when the button already sits on a semi-transparent surface
+     (e.g. inside a ToolGroup pill), since the two colors are too close in
+     value. Mixing in --ink guarantees visible contrast in both themes:
+     it lightens on dark backgrounds and darkens on light ones. */
+  .tool-btn-hover:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+  .font-display { font-family: var(--font-display); }
+  /* soft confetti-dot texture, used sparingly as a single deliberate touch on the hero */
+  .bg-grain {
+    background-image: radial-gradient(color-mix(in srgb, var(--accent) 10%, transparent) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  /* Neutral elevation for general-purpose surfaces (cards, modals, toasts,
+     dashboard tiles). Purple is intentionally NOT part of this shadow —
+     accent color is reserved for CTAs/active states, see .shadow-accent. */
+  .shadow-soft {
+    box-shadow: none;
+  }
+  .shadow-soft-lg {
+    box-shadow: none;
+  }
+  /* Accent glow — use only on primary CTA / active interactive elements. */
+  .content-width { max-width: var(--content); }
+  .mobile-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin-inline: -1.25rem;
+    margin-bottom: 0;
+    padding: .75rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+  }
+  .tap-target { min-width: 44px; min-height: 44px; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .scrollbar-hidden { scrollbar-width: none; }
+  .scrollbar-hidden::-webkit-scrollbar { display: none; }
+  .page-shell { width: min(100%, var(--content)); margin-inline: auto; }
+  .tool-workspace { min-height: 180px; }
+
+  .surface-elevated {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent), 0 20px 50px -28px color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+
+  .workspace-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent), 0 28px 60px -36px color-mix(in srgb, var(--ink) 20%, transparent);
+  }
+  .section-label {
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .interactive-surface {
+    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  }
+  .interactive-surface:hover {
+    border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+    box-shadow: 0 16px 36px -24px color-mix(in srgb, var(--ink) 24%, transparent);
+  }
+  .shadow-accent {
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent),
+      0 14px 28px -14px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-toast-in { animation: toast-in 160ms ease-out; }
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin-slow 0.9s linear infinite; }
+
+@keyframes float-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2%, -4%) scale(1.04); }
+}
+.animate-float-blob { animation: float-blob 9s ease-in-out infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 200ms ease-out; }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in { animation: pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Lightweight CSS tooltip used across the toolbar and other icon-only
+   controls — pairs with a visible aria-label/title for accessibility.
+   Usage: <span className="tooltip" data-tooltip="Label (Ctrl+K)">...</span> */
+.tooltip {
+  position: relative;
+}
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 7px);
+  transform: translateX(-50%) translateY(-2px);
+  white-space: nowrap;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease, transform 120ms ease;
+  z-index: 60;
+}
+.tooltip:hover::after,
+.tooltip:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 300ms;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+}
+
+@media (max-width: 639px) {
+  .workspace-panel { border-radius: 16px; }
+  .tool-workspace { min-height: 160px; }
+}
+
+/* Stage 3 — premium polish */
+@layer utilities {
+  .glass-surface { background: color-mix(in srgb, var(--surface) 86%, transparent); backdrop-filter: blur(18px); }
+  .hairline { height: 1px; background: var(--border); }
+  .focus-ring:focus-visible { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent); }
+  .skeleton { position: relative; overflow: hidden; background: var(--surface-2); }
+  .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 55%, transparent), transparent); animation: skeleton-shimmer 1.25s ease-in-out infinite; }
+  .status-dot { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent); }
+  .reveal { animation: reveal-up 360ms cubic-bezier(.16,1,.3,1) both; }
+  .reveal-delay-1 { animation-delay: 60ms; }
+  .reveal-delay-2 { animation-delay: 120ms; }
+  .reveal-delay-3 { animation-delay: 180ms; }
+}
+@keyframes skeleton-shimmer { to { transform: translateX(100%); } }
+@keyframes reveal-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes success-pop { 0% { transform: scale(.8); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+.success-pop { animation: success-pop 420ms cubic-bezier(.16,1,.3,1) both; }
+
+@media (max-width: 639px) {
+  .mobile-action-bar { margin-inline: -1.25rem; margin-bottom: 0; padding-inline: 1.25rem; }
+}
+
+
+/* Stage 4 — production UX polish */
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  padding: .65rem .85rem;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--ink) 40%, transparent);
+  transition: transform 120ms ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.page-enter {
+  animation: page-enter 180ms ease-out both;
+}
+.interactive-surface {
+  border-color: var(--border);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.interactive-surface:hover {
+  box-shadow: 0 16px 36px -28px color-mix(in srgb, var(--ink) 28%, transparent);
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 639px) {
+  .skip-link { left: .75rem; top: .75rem; }
+}
