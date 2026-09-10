@@ -8,12 +8,12 @@ export default function ToolPageHeader({ tool }) {
 
   return (
     <header className="mb-8">
-      <nav className="mb-5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted" aria-label="Breadcrumb">
-        <Link to="/app" className="transition-colors hover:text-ink">Semua alat</Link>
-        <ChevronRight className="size-3" />
-        <span>{group?.label || "Tool"}</span>
-        <ChevronRight className="size-3" />
-        <span className="truncate text-ink">{tool.name}</span>
+      <nav className="mb-5 flex items-center gap-1.5 overflow-hidden text-[11px] font-semibold uppercase tracking-[0.08em] text-muted" aria-label="Breadcrumb">
+        <Link to="/app" className="shrink-0 whitespace-nowrap transition-colors hover:text-ink">Semua alat</Link>
+        <ChevronRight className="size-3 shrink-0" />
+        <span className="shrink-0 whitespace-nowrap">{group?.label || "Tool"}</span>
+        <ChevronRight className="size-3 shrink-0" />
+        <span className="min-w-0 truncate text-ink">{tool.name}</span>
       </nav>
 
       <div className="flex items-start gap-4">
