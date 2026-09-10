@@ -5,10 +5,11 @@ import {
   Zap,
   Globe,
   ChevronDown,
+  ChevronUp,
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TOOL_GROUPS, TOOLS, TOOL_LIST, groupOfTool } from "../lib/toolsMeta";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -94,6 +95,18 @@ function ToolGridCard({ tool }) {
 export default function Landing() {
   const [activeGroup, setActiveGroup] = useState("all");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 400);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const visibleTools =
     activeGroup === "all"
@@ -305,6 +318,19 @@ export default function Landing() {
       <footer className="border-t border-hair px-5 py-6 text-center text-[12px] text-muted">
         Formatra — diproses sepenuhnya di browser Anda.
       </footer>
+
+      <button
+        type="button"
+        onClick={scrollToTop}
+        aria-label="Kembali ke atas"
+        className={`fixed bottom-6 right-5 z-50 flex size-11 items-center justify-center rounded-full bg-accent text-accent-ink shadow-soft transition-all duration-300 hover:-translate-y-0.5 lg:right-8 ${
+          showBackToTop
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none translate-y-3 opacity-0"
+        }`}
+      >
+        <ChevronUp className="size-5" />
+      </button>
     </div>
   );
 }
