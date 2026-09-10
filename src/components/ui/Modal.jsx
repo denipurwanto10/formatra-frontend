@@ -24,7 +24,7 @@ export default function Modal({ open, onClose, title, children, width = 420 }) {
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full rounded-2xl border-hair bg-surface p-5 shadow-soft-lg"
+        className="relative flex max-h-[90vh] w-full flex-col overflow-y-auto rounded-2xl border-hair bg-surface p-5 shadow-soft-lg"
         style={{ maxWidth: width }}
       >
         <div className="mb-4 flex items-center justify-between">

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Download, RotateCcw, Maximize2, FileText } from "lucide-react";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
+import PdfPreview from "./PdfPreview";
 import { formatBytes } from "../../utils/formatBytes";
 
 function isPreviewable(blob) {
@@ -127,11 +128,7 @@ function InlinePreview({ file, onExpand }) {
   return (
     <div className="group relative overflow-hidden rounded-[var(--radius-md)] border-hair bg-surface">
       {isPdf ? (
-        <iframe
-          src={`${url}#toolbar=0`}
-          title={`Pratinjau ${file.name}`}
-          className="h-64 w-full bg-white sm:h-80"
-        />
+        <PdfPreview file={file.blob} heightClass="h-64 sm:h-80" />
       ) : isVideo ? (
         <video src={url} controls className="max-h-64 w-full bg-black sm:max-h-80" />
       ) : (
@@ -171,11 +168,7 @@ function PreviewModal({ open, file, onClose }) {
     <Modal open={open} onClose={onClose} title={file.name} width={isPdf ? 1080 : 760}>
       <div className="flex flex-col gap-4">
         {isPdf ? (
-          <iframe
-            src={url}
-            title={`Pratinjau ${file.name}`}
-            className="h-[80vh] w-full rounded-xl border-hair bg-white"
-          />
+          <PdfPreview file={file.blob} heightClass="h-[60vh] sm:h-[70vh] rounded-xl border-hair" />
         ) : isVideo ? (
           <video src={url} controls autoPlay className="max-h-[70vh] w-full rounded-xl border-hair bg-black" />
         ) : (
