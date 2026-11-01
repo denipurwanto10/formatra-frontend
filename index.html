@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6d4aff" />
+    <meta
+      name="description"
+      content="Formatra — gabung, kompres, konversi, edit, dan OCR dokumen PDF, Word, Excel, PowerPoint, dan gambar, langsung di browser Anda. Gratis, tanpa akun, dan file tidak diunggah ke server."
+    />
+    <meta property="og:title" content="Formatra — Semua Alat Dokumen dalam Satu Tempat" />
+    <meta
+      property="og:description"
+      content="Konversi, gabungkan, kompres, dan edit PDF, Word, Excel, PowerPoint, dan gambar langsung di browser. Tanpa akun, tanpa upload ke server."
+    />
+    <meta property="og:type" content="website" />
+    <title>Formatra — Semua Alat Dokumen dalam Satu Tempat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        // Light is Formatra's primary, default experience — only an explicit
+        // prior choice (saved via the theme toggle) should switch to dark.
+        // We deliberately ignore prefers-color-scheme here so first-time
+        // visitors always land on light mode.
+        try {
+          var stored = localStorage.getItem("formatra-theme");
+          if (stored === "dark") document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
